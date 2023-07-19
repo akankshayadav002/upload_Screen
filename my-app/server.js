@@ -9,16 +9,17 @@ const bodyParser = require('body-parser');
  
 //use express static folder
 app.use(cors());
-app.use(express.static("./public"))
+app.use(express.static("public"))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
  
 // Database connection
 const db = mysql.createConnection({
     host: "localhost",
+    port:"3300",
     user: "root",
     password: "Lappy89",
-    database: "test"
+    database: "test1"
 })
  
 db.connect(function (err) {
@@ -46,20 +47,30 @@ var upload = multer({
 //route for post data
 
 app.post("/upload", upload.single('image'), (req, res) => {
-    if (!req.file) {
-        console.log("No file upload");
-    } else {
+    
         console.log(req.file.filename)
-        // var imgsrc = 'http://127.0.0.1:3000/images/' + req.file.filename
-        // var insertData = "INSERT INTO users_file(file_src)VALUES(?)"
+        const image= req.file.filename;
+        const path = "C:\\Users\\Akansha\\Documents\\upload screen\\upload_Screen\\my-app\\public\\images\\"+image; 
+        const sql ="INSERT INTO users(image) VALUES  (?)";
+        db.query(sql, path, (err,result)=>{
+            if(err) {
+                console.log("ERROR: ",err);
+                return res.json({Message:"Error"});
+            }
 
-        // db.query(insertData, [imgsrc], (err, result) => {
-        //     if (err) throw err
-        //     console.log("file uploaded")
-        // })
-    }
+            return res.json({Status:"Success",data: result})
+        })
+        
+    
 });
- 
+
+app.get('/',(req,res)=>{
+    const sql= 'select * from users';
+    db.query(sql,(err,result)=>{
+        if(err) return res.json("Error");
+        return res.json(result);
+    })
+})
 //create connection
-const PORT = process.env.PORT || 3300
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server is running at port ${PORT}`))
